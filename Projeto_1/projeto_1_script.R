@@ -92,13 +92,34 @@ ggplot(data= dataset) +
   labs( y= "Quantidade", x = "Especie")
 
 
-# Filtar por especie e removendo a coluna especie
+# Filtar por especie e removendo as colunas especie e observação
 
 Iris_setosa     <- filter(dataset,Espécie =='Iris-setosa')
-Iris_setosa <- select(Iris_setosa, -Espécie)
+Iris_setosa <- select(Iris_setosa, -Espécie, -Observações)
 
 Iris_versicolor <- filter(dataset,Espécie =='Iris-versicolor')  
-Iris_versicolor <- select(Iris_versicolor, -Espécie)
+Iris_versicolor <- select(Iris_versicolor, -Espécie, -Observações)
 
 Iris_virginica  <- filter(dataset,Espécie =='Iris-virginica')
-Iris_virginica <- select(Iris_virginica, -Espécie)
+Iris_virginica <- select(Iris_virginica, -Espécie, -Observações)
+
+
+
+# Calculando valores máximos, mínimos e média de cada espécie
+
+
+
+
+média_comprimento = mean(Iris_setosa$`Compr. Sépala(cm)`)
+max_comprimento = max(Iris_setosa$`Compr. Sépala(cm)`)
+min_comprimento = min(Iris_setosa$`Compr. Sépala(cm)`)
+média_largura = mean(Iris_setosa$`Larg. Sépala(cm)`)
+max_largura = max(Iris_setosa$`Larg. Sépala(cm)`)
+min_largura = min(Iris_setosa$`Larg. Sépala(cm)`)
+                                      
+        
+                                      
+                                    
+
+
+                                   
