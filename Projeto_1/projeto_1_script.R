@@ -28,7 +28,8 @@ pacotes <- c("ggplot2",
              'nnet', #
              'stargazer',
              'reshape2', 
-             'fmsb') 
+             'fmsb',
+             'tibble') 
 
 if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
   instalador <- pacotes[!pacotes %in% installed.packages()]
@@ -42,7 +43,7 @@ if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
 
 ############################################################################
 
-################## Parte 2 - Análise Exploratória #########################
+################## Parte 2 - Análise Introdutória #########################
 
 
 # Carregando Dataset
@@ -67,18 +68,30 @@ summary(dataset)
 
 dataset$Species <- as.factor(dataset$Species)
 
+
+
+# Adicionar a coluna da unidade
+
+unidade <- 'cm'
+
+dataset <- mutate(dataset,unidade)%>%
+  relocate(unidade, .before =Species)
+
+
+
 ## Alterar os Nomes das colunas
 
-novos_nomes <- c("Observações",
-                 "Compr. Sépala(cm)",
-                 "Larg. Sépala(cm)",
-                 "Compr. Pétala(cm)",
-                 "Larg. Pétala(cm)",
+novos_nomes <- c("Observação",
+                 "Compr.Sepala",
+                 "Larg.Sepala",
+                 "Compr.Petala",
+                 "Larg.Petala",
+                 "Unidade",
                  "Espécie")
 
 names(dataset) <- novos_nomes
 
-## Visualizar as primeiras linhas do dataset, facilita entendimento.
+## Visualizar as duas primeiras linhas do dataset, facilita entendimento.
 
 head(dataset,n =2) %>%
   kable() %>%
@@ -92,33 +105,140 @@ ggplot(data= dataset) +
   labs( y= "Quantidade", x = "Especie")
 
 
-# Filtar por especie e removendo as colunas especie e observação
 
-Iris_setosa     <- filter(dataset,Espécie =='Iris-setosa')
-Iris_setosa <- select(Iris_setosa, -Espécie, -Observações)
-
-Iris_versicolor <- filter(dataset,Espécie =='Iris-versicolor')  
-Iris_versicolor <- select(Iris_versicolor, -Espécie, -Observações)
-
-Iris_virginica  <- filter(dataset,Espécie =='Iris-virginica')
-Iris_virginica <- select(Iris_virginica, -Espécie, -Observações)
+################ Parte 3 -  Wragling de dados ################
 
 
 
-# Calculando valores máximos, mínimos e média de cada espécie
+# transformando variaveis dimensionais de colunas para linhas
+
+dataset <- dataset %>%
+  gather('Larg.Petala','Larg.Sepala', key = "Largura", value = 'compri.val')%>%
+  gather('Compr.Petala','Compr.Sepala', key = "Comprimento", value = 'larg.val')
+
+
+# transformando coluna "observação" em factor
+# vai facilitar para Agrupar
+
+dataset$Observação <- as.factor(dataset$Observação)
+
+# Agrupando Dataset a partir das observações
+
+dataset <- dataset %>% 
+  group_by(Observação)%>%
+  arrange(.by_group=TRUE)
+
+
+
+# Selecionando as linhas que temos os valores dimensionais
+# para petala e sepalas separadas
+
+dataset <-mutate(dataset,
+                  Parte_floral = case_when(
+                  Largura == 'Larg.Petala' & Comprimento == "Compr.Petala" ~ 'Petala',
+                  Largura == 'Larg.Sepala' &  Comprimento == "Compr.Sepala" ~ 'Sepala'),)
+
+
+
+# Removendo linhas com NA's
+
+dataset <- na.omit(dataset)
+
+
+
+# Selecionando que vamos utilizar
+
+dataset <- select(dataset, -Largura, -Comprimento)
+
+# Reorganizando Posições das colunas
+
+dataset <- dataset %>% relocate(Espécie, .after= Observação)%>%
+                       relocate(Parte_floral, .after= Espécie)%>%
+                       relocate(Unidade, .after= larg.val)
+            
+# Renomeando Colunas
+dataset <- rename(dataset,
+        Comprimento = compri.val,
+        Largura = larg.val
+       )
+
+
+
+# transformando coluna "parte_floral" em factor
+# vai facilitar para Agrupar
+
+dataset$Parte_floral <- as.factor(dataset$Parte_floral)
+
+# Agrupamento e Ordem
+
+dataset <- dataset %>% 
+  group_by(Observação,Espécie,Parte_floral)%>%
+  arrange(.by_group=TRUE)
+
+
+head(dataset) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped", 
+                full_width = FALSE, 
+                font_size = 16)
+## desagrupar
+dataset <- dataset %>% 
+ungroup()
 
 
 
 
-média_comprimento = mean(Iris_setosa$`Compr. Sépala(cm)`)
-max_comprimento = max(Iris_setosa$`Compr. Sépala(cm)`)
-min_comprimento = min(Iris_setosa$`Compr. Sépala(cm)`)
-média_largura = mean(Iris_setosa$`Larg. Sépala(cm)`)
-max_largura = max(Iris_setosa$`Larg. Sépala(cm)`)
-min_largura = min(Iris_setosa$`Larg. Sépala(cm)`)
-                                      
-        
-                                      
+
+################ Parte 4 -  Análise Exploratória ################
+
+## Plotar grafico para ver diferenças 
+# dimensionais entre as especies e as partes florais
+
+ggplot(dataset)+
+  geom_point(mapping = aes(x = Comprimento, 
+                           y = Largura,
+                           color = Espécie))+
+  facet_wrap(~Parte_floral, nrow=2)
+
+
+ggplot(dataset)+
+  geom_point(mapping = aes(x = Comprimento, 
+                           y = Largura,
+                           color = Parte_floral))+
+  facet_wrap(~Espécie, nrow=3)
+
+
+
+## agrupando por especie parte floral
+
+dataset <- dataset %>% 
+  group_by(Espécie,Parte_floral)%>%
+  arrange(.by_group=TRUE)
+
+
+
+
+# Calculando valores máximos, mínimos e média 
+
+descritiva <- dataset %>%
+  summarise(
+    Comprimento_med = mean(Comprimento),
+    Largura_med     = mean(Largura),
+    
+    Comprimento_min = min(Comprimento),
+    Largura_min     = min(Largura),
+    
+    Comprimento_max = max(Comprimento),
+    Largura_max     = max(Largura),
+    Unidade = unidade
+  )
+
+
+
+
+
+
+                
                                     
 
 

@@ -96,9 +96,9 @@ valores_medios <- data.frame(
   
   row.names = c("Iris-setosa","Iris-versicolor","Iris-virginica"),
   
-  SepalLengthCm = c(mean(Iris_setosa$SepalLengthCm),
-                    mean(Iris_versicolor$SepalLengthCm),
-                    mean(Iris_virginica$SepalLengthCm)),
+  SepalLengthCm = c(mean(Iris_setosa$Compr. Sépala(cm)),
+                    mean(Iris_versicolor$Compr. Sépala(cm)),
+                    mean(Iris_virginica$Compr. Sépala(cm))),
   
   SepalWidthCm = c(mean(Iris_setosa$SepalWidthCm),
                    mean(Iris_versicolor$SepalWidthCm),
