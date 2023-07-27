@@ -1,5 +1,4 @@
-# Projeto 1 - Analise Fatorial, Logística Multinominal
-
+# Projeto 1 - Script "Análise Exploratória"
 
 
 # Dataset - Iris.csv
@@ -8,8 +7,9 @@
 
 
 
-# O Projeto se concentrará em comparar dois modelos logisticos.
-# Um modelo utilizando analise fatorial e outro apenas com os dados de entrada.
+# O script tem como objetivo realizar a análise prévia e 
+# Exploratória do dataset.
+
 
 
 ###########################################################################
@@ -245,7 +245,9 @@ head(descritiva) %>%
   kable_styling(bootstrap_options = "striped", 
                 full_width = FALSE, 
                 font_size = 16)
-  
+
+
+
                                     
 
 

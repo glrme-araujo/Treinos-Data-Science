@@ -30,9 +30,7 @@ dataset2_mutato <-mutate(dataset2,
       Largura == 'Larg.Petala' & Comprimento == "Compr.Petala" ~ 'Petala',
       Largura == 'Larg.Sepala' &  Comprimento == "Compr.Sepala" ~ 'Sepala'),
       
-                               
-                                                    
-                           
+
                            
                          
   
@@ -129,4 +127,71 @@ legend(
   bty = "n", pch = 20 , col = c("#00AFBB", "purple", "#FC4E07"),
   text.col = "black", cex = 1, pt.cex = 1.5
 )
-  
+
+table(dataset$Grupo,dataset$Espécie)                                                    
+
+acuracia <- (round((sum(diag(table(dataset$Grupo,dataset$Espécie))) / 
+                      sum(table(dataset$Grupo,dataset$Espécie))), 2))
+acuracia      
+
+
+
+
+
+
+fviz_nbclust(dataset_ajustado, kmeans, method = "wss", k.max = 10)
+
+ggscatter(
+  ind.coord, x = "Dim.1", y = "Dim.2", 
+  color = "cluster", palette = "npg", ellipse = TRUE, ellipse.type = "convex",
+  shape = "Species", size = 1.5,  legend = "right", ggtheme = theme_bw(),
+  xlab = paste0("Dim 1 (", variance.percent[1], "% )" ),
+  ylab = paste0("Dim 2 (", variance.percent[2], "% )" )
+) +
+  stat_mean(aes(color = cluster), size = 4)
+
+
+
+dista=dist(dataset_ajustado, method="euclidean")
+
+dista.hc=agnes(x=dista, method="complete")
+dataset$cluster_H <- factor(cutree(tree = dista.hc, k = 3))
+dev.off()
+fviz_dend(x = dista.hc, show_labels = F)
+
+fviz_dend(x = dista.hc,
+          h = 5.5,
+          color_labels_by_k = F,
+          rect = T,
+          rect_fill = T,
+          rect_border = "black",
+          lwd = 1,
+          show_labels = F,
+          ggtheme = theme_bw())
+
+dataset$cluster_H <- factor(cutree(tree = dista.hc, k = 3))
+
+
+acuracia <- (round((sum(diag(table(dataset$cluster_H,dataset$Espécie))) / 
+                      sum(table(dataset$cluster_H,dataset$Espécie))), 2))
+acuracia 
+
+
+table(dataset$cluster_H,dataset$Espécie)                                                    
+
+# Plotagem
+
+fviz_cluster(dista.hc,data=dataset_ajustado,
+             palette = c( "#00AFBB", "#E7B800", "#FC4E07"),
+             geom = "point",
+             shape = 15,
+             ellipse.type="convex",
+             star.plot=TRUE,
+             ggtheme=theme_minimal(),
+             main = "Cluster plot"
+             
+)
+
+
+
+
