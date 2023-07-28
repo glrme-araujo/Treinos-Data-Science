@@ -150,9 +150,20 @@ ggscatter(
 ) +
   stat_mean(aes(color = cluster), size = 4)
 
-
+coeficientes <- sort(cluster_h$height, decreasing = FALSE) 
+coeficientes
 
 dista=dist(dataset_ajustado, method="euclidean")
+esquema <- as.data.frame(cbind(cluster_h$merge, coeficientes))
+names(esquema) <- c("Cluster1", "Cluster2", "Coeficientes")
+esquema
+
+
+
+fviz_dend(x = cluster_h)
+
+
+
 
 dista.hc=agnes(x=dista, method="complete")
 dataset$cluster_H <- factor(cutree(tree = dista.hc, k = 3))
@@ -181,7 +192,40 @@ table(dataset$cluster_H,dataset$Espécie)
 
 # Plotagem
 
-fviz_cluster(dista.hc,data=dataset_ajustado,
+fviz_cluster(pam.res3,data=dataset_ajustado,
+             palette = c( "#00AFBB", "#E7B800", "#FC4E07"),
+             geom = "point",
+             shape = 15,
+             ellipse.type="convex",
+             star.plot=TRUE,
+             ggtheme=theme_minimal(),
+             main = "Cluster plot"
+             
+)
+
+sil.score(dataset_ajustado, nb.clus = c(2:13), nb.run = 100, iter.max = 1000,
+          method = "euclidean")
+
+
+fviz_silhouette(pam.res3, palette = "jco", ggtheme = theme_classic())
+pam.res3 <- pam(dataset_ajustado, 3)
+pam <- fviz_cluster(pam.res3, 
+             data = dataset_ajustado,
+             geom = 'point',
+             stand = FALSE,
+             title = 'PAM — CLUSTERING',
+             frame.type = 'convex')
+
+grid.arrange(pam,
+             kmeans,
+            heights=unit(0.8,'npc'),
+            top='Algoritmos de Segmentação, clusters = 3')
+
+
+
+
+
+kmeans<-fviz_cluster(cluster_kmeans,data=dataset_ajustado,
              palette = c( "#00AFBB", "#E7B800", "#FC4E07"),
              geom = "point",
              shape = 15,
@@ -193,5 +237,14 @@ fviz_cluster(dista.hc,data=dataset_ajustado,
 )
 
 
+db <- fpc::dbscan(dataset_ajustado,eps = 0.15, MinPts = 5)
+#Visualize DBSCAN Clustering
+fviz_cluster(db,
+              data=dataset_ajustado,
+              stand = FALSE,
+              show.clust.cent = FALSE,
+              geom = 'point',
+              title = 'DBSCAN — CLUSTERING')
+ 
 
-
+summary(modelo_especies)

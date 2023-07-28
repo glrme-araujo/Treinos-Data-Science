@@ -8,7 +8,7 @@
 
 
 # O script tem como objetivo realizar a clusterização do dataset,
-# e comparar os métodos K-means, Hierarquico e DBSCAN.
+# e comparar os métodos K-means e Hierarquico
 
 
 
@@ -40,7 +40,7 @@ if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
 ############################################################################
 
 ################## Parte 2 - Análise Introdutória #########################
-set.seed(123)
+
 
 # Carregando Dataset
 
@@ -86,14 +86,6 @@ head(dataset,n =2) %>%
                 font_size = 16)
 
 
-
-
-
-###################################################################
-
-
-################## Parte 3 - Cluster (K-means) #########################
-
 # Padronizando valores
 dataset_ajustado <- scale(dataset[,2:5])
 
@@ -109,8 +101,29 @@ fviz_nbclust(dataset_ajustado,
              method = "wss", 
              k.max = 10)
 
-# de acordo o metodo, um numero entre 3 e 4 cluster esta bom
-# n de centroides = n de espécies.
+# Método silhouette para identificação do número ótimo de clusters
+
+fviz_nbclust(dataset_ajustado, 
+             kmeans,
+             method = "silhouette", 
+             k.max = 10)
+
+
+
+# de acordo os metodos, um numero entre 2 e 4 cluster esta bom
+
+
+
+###################################################################
+
+
+################## Parte 3 - Cluster (K-means) #########################
+
+# Definir uma 'semente' para sempre obter mesmos valores aleatórios do kmeans
+
+set.seed(123)
+
+# Realizando Clusterização
 
 cluster_kmeans <- kmeans(dataset_ajustado,
                          centers = 3)
@@ -139,13 +152,6 @@ fviz_cluster(cluster_kmeans,data=dataset_ajustado,
              main = "Cluster plot"
              
 )
-acuracia <- (round((sum(diag(table(dataset$cluster_K,dataset$Espécie))) / 
-                      sum(table(dataset$cluster_K,dataset$Espécie))), 2))
-acuracia 
-
-
-# A acurácia do cluster k-means pode mudar pois os centroides são
-# posicionados aletoriamente.
 
 ################## Parte 4 - Cluster Hierárquico #########################
 
@@ -156,12 +162,6 @@ matriz_d = dist(dataset_ajustado, method="euclidean")
 # Realizando o cluster hierarquico
 
 cluster_h=agnes(x=matriz_d, method="complete")
-
-
-# Adicionando cluster ao dataset
-dataset$cluster_H <- factor(cutree(tree = cluster_h, k = 3))
-
-
 
 # Dendrograma com visualização dos clusters 
 
@@ -176,10 +176,34 @@ fviz_dend(x = cluster_h,
           show_labels = F,
           ggtheme = theme_bw())
 
-acuracia <- (round((sum(diag(table(dataset$cluster_H,dataset$Espécie))) / 
-                      sum(table(dataset$cluster_H,dataset$Espécie))), 2))
-acuracia 
+# Adicionando cluster ao dataset
+dataset$cluster_H <- factor(cutree(tree = cluster_h, k = 3))
 
 
-# A acuracia do cluster hierarquico é sempre a mesma.
-# Pois é calculada a matriz de similiaridades.
+
+################## Parte 5- Visualizando acertividade #########################
+
+
+# Plotagem Cluster K-means
+
+k_plot <- ggplot(dataset)+
+  geom_bar(mapping=aes(x=cluster_K, fill= Espécie))+
+  labs( y= "Quantidade", x = "Grupo")+
+  ggtitle('Cluster K-means')
+
+# Plotagem Cluster hierarquico
+h_plot <-   ggplot(dataset)+
+  geom_bar(aes(x=cluster_H, fill= Espécie))+
+  labs( y= "Quantidade", x = "Grupo")+
+  ggtitle('Cluster hierarquico')
+
+## Plotagem simultanea
+grid.arrange(k_plot,
+             h_plot,
+             heights=unit(1.0,'npc'))
+
+
+
+## Visualização Numérica
+summary(dataset)
+             
