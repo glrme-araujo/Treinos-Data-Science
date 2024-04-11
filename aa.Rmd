@@ -1,0 +1,30 @@
+---
+title: " Instalação Bibliotecas para Modelos Logísticos Binários e Multinomiais"
+output: html_document
+date: "2024-04-11"
+---
+
+Script Para instalação das bibliotecas utilizadas nesse codigo.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r import_libs}
+pacotes <- c("plotly","tidyverse","knitr","kableExtra","fastDummies","rgl","car",
+             "reshape2","jtools","stargazer","lmtest","caret","pROC","ROCR","nnet",
+             "magick","cowplot","globals","equatiomatic")
+
+options(rgl.debug = TRUE)
+
+if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
+  instalador <- pacotes[!pacotes %in% installed.packages()]
+  for(i in 1:length(instalador)) {
+    install.packages(instalador, dependencies = T)
+    break()}
+  sapply(pacotes, require, character = T) 
+} else {
+  sapply(pacotes, require, character = T) 
+}
+
+```
